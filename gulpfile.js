@@ -1,29 +1,41 @@
 var yargs = require('yargs').argv;
 var gulp = require('gulp');
 var less = require('gulp-less');
+var header = require('gulp-header');
 var minify = require('gulp-minify-css');
 var autoprefixer = require('gulp-autoprefixer');
 var rename = require('gulp-rename');
 var sourcemaps = require('gulp-sourcemaps');
 var browserSync = require('browser-sync');
+var pkg = require('./package.json');
 
+var option = {base: 'src'};
 var dist = __dirname + '/dist';
 
-gulp.task('styles', function () {
-    var option = {base: 'src'};
-
+gulp.task('source', function(){
     gulp.src('src/example/**/*.!(less)', option)
         .pipe(gulp.dest(dist))
         .pipe(browserSync.reload({stream: true}));
+});
 
+gulp.task('styles', ['source'], function () {
     gulp.src('src/example/example.less', option)
         .pipe(less().on('error', function (e){
             console.error(e.message);
             this.emit('end');
         }))
+        .pipe(autoprefixer())
+        .pipe(minify())
         .pipe(gulp.dest(dist))
         .pipe(browserSync.reload({stream: true}));
 
+    var banner = [
+        '/*!',
+        ' * WeUI v<%= pkg.version %> (<%= pkg.homepage %>)',
+        ' * Copyright <%= new Date().getFullYear() %> Tencent, Inc.',
+        ' * Licensed under the <%= pkg.license %> license',
+        ' */',
+        ''].join('\n');
     gulp.src('src/style/weui.less', option)
         .pipe(sourcemaps.init())
         .pipe(less().on('error', function (e) {
@@ -32,6 +44,7 @@ gulp.task('styles', function () {
         }))
         .pipe(sourcemaps.write())
         .pipe(autoprefixer())
+        .pipe(header(banner, { pkg : pkg } ))
         .pipe(gulp.dest(dist))
         .pipe(minify())
         .pipe(rename(function (path) {
@@ -45,23 +58,24 @@ gulp.task('release', ['styles']);
 
 gulp.task('watch', function () {
     gulp.watch('src/**/*.less', ['styles']);
-    gulp.watch('src/example/**/*.{html,js}', function () {
+    gulp.watch('src/example/**/*.{html,js}', ['source'], function () {
         browserSync.reload();
-    })
+    });
 });
 
 gulp.task('server', function () {
+    yargs.p = yargs.p || 8080;
     browserSync.init({
         server: {
             baseDir: "./dist"
         },
         ui: {
-            port: 8081,
+            port: yargs.p + 1,
             weinre: {
-                port: 9090
+                port: yargs.p + 2
             }
         },
-        port: 8080,
+        port: yargs.p,
         startPath: '/example'
     });
 });
@@ -71,14 +85,12 @@ gulp.task('server', function () {
 //  -w: 实时监听
 //  -s: 启动服务器
 //  -p: 服务器启动端口，默认8080
-gulp.task('default', function () {
+gulp.task('default', ['release'], function () {
     if (yargs.s) {
         gulp.start('server');
     }
+
     if (yargs.w) {
-        gulp.start('release');
         gulp.start('watch');
-    } else {
-        gulp.start('release');
     }
 });

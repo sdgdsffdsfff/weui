@@ -1,4 +1,4 @@
-@import "../../../style/base/fn";
+@import "../../base/fn";
 
 .weui_cell {
     // onepx
@@ -13,15 +13,15 @@
         }
     }
 }
+
 .weui_cells {
-    margin-top: .8em;
+    margin-top: @weuiCellsMarginTop;
     background-color: @weuiCellBg;
-    line-height: 1.45;
-    font-size: 16px; //cell中间有效高度23px，跟客户端默认图标尺寸一致
+    line-height: @weuiCellLineHeight;
+    font-size: @weuiCellFontSize; //cell中间有效高度23px，跟客户端默认图标尺寸一致
 
     overflow: hidden; //因为每个cell的border使用before元素left搞的，ie下伪元素的containing block估计跟标准不同，在cell上用oh不生效
 
-    
     // onepx
     position: relative;
     &:before {
@@ -33,28 +33,31 @@
 }
 
 .weui_cells_title {
-    margin-top: .8em;
+    margin-top: .77em; // 15px - 行高
+    margin-bottom: .3em; // 8px - 行高
     padding-left: @weuiCellGapH;
     padding-right: @weuiCellGapH;
     color: @globalTextColor;
+    font-size: @weuiCellTipsFontSize;
 
-    &+.weui_cells{
+    & + .weui_cells {
         margin-top: 0;
     }
 }
 
-.weui_cell {
-    padding: @weuiCellGapV @weuiCellGapH;
-    display: block; //这个是为了兼容语义化(li)与实现(table-cell)的冲突
-    position: relative; //这个是为了兼容cells容器onepx方案被before挡住而做的
+.weui_cells_tips {
+    margin-top: .3em; // 8px - 行高
+    color: @globalTextColor;
+    padding-left: @weuiCellGapH;
+    padding-right: @weuiCellGapH;
+    font-size: @weuiCellTipsFontSize;
 }
 
-.weui_cell_hd, .weui_cell_bd, .weui_cell_ft {
-    display: table-cell;
-    vertical-align: middle;
-    word-wrap: break-word;
-    word-break: break-all;
-    white-space: nowrap;
+.weui_cell {
+    padding: @weuiCellGapV @weuiCellGapH;
+    position: relative; //这个是为了兼容cells容器onepx方案被before挡住而做的
+    display: flex;
+    align-items: center;
 }
 
 .weui_cell_ft {
@@ -63,6 +66,5 @@
 }
 
 .weui_cell_primary {
-    width: 2000px;
-    white-space: normal;
+    flex: 1;
 }
